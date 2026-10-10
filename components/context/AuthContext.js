@@ -4,6 +4,28 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 
 const AuthContext = createContext(null);
 
+async function parseJsonResponse(response) {
+  const text = await response.text();
+
+  if (!text) {
+    return null;
+  }
+
+  const trimmed = text.trim();
+  const contentType = response.headers.get('content-type') || '';
+
+  if (contentType.includes('application/json') || trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      return JSON.parse(trimmed);
+    } catch (error) {
+      console.error('Failed to parse JSON response:', error);
+      return null;
+    }
+  }
+
+  return null;
+}
+
 export function AuthProvider({ children }) {
   const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
   const [user, setUser] = useState(null);
@@ -26,7 +48,7 @@ export function AuthProvider({ children }) {
         },
       });
 
-      const data = await res.json();
+      const data = await parseJsonResponse(res);
 
       if (data?.success && data?.user) {
         setUser(data.user);
@@ -51,13 +73,18 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      await fetch(`${API_ORIGIN}/client/auth/logout`, {
+      const res = await fetch(`${API_ORIGIN}/client/auth/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
       });
+
+      if (res && !res.ok) {
+        const data = await parseJsonResponse(res);
+        console.warn('Logout request returned a non-OK response:', data?.message || res.statusText);
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {

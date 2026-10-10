@@ -10,7 +10,7 @@ export default function Login() {
   const { refetch } = useAuth();
   const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [focused, setFocused] = useState('')
   const [error, setError] = useState('')
@@ -31,14 +31,14 @@ export default function Login() {
           "Content-Type": "application/json",
         },
         credentials: "include",
-        body: JSON.stringify({ email: username, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
 
       if(data.success){
         setSuccess(data.message || "Logged in successfully");
-        setUsername("");
+        setEmail("");
         setPassword("");
         await refetch();
         router.push("/portal");
@@ -80,18 +80,18 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="relative">
             <label className={`absolute left-11 transition-all duration-300 pointer-events-none ${
-              focused === 'username' || username
+              focused === 'email' || email
                 ? '-top-2.5 left-3 text-xs bg-white px-1.5 rounded text-blue-600'
                 : 'top-1/2 -translate-y-1/2 text-sm text-gray-400'
             }`}>
-              Username
+              Email
             </label>
             <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600/70" />
             <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              onFocus={() => setFocused('username')}
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setFocused('email')}
               onBlur={() => setFocused('')}
               className="w-full bg-white border border-gray-300 focus:border-blue-600 rounded-xl pl-11 pr-4 py-3 text-gray-900 outline-none transition-all duration-300 focus:shadow-lg focus:shadow-blue-500/10"
             />
