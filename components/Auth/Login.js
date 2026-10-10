@@ -1,13 +1,55 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Eye, EyeOff, Lock, User, CircleAlert, CircleCheck } from 'lucide-react';
+import { useAuth } from "@/components/context/AuthContext";
 
 export default function Login() {
+  const router = useRouter();
+  const { refetch } = useAuth();
+  const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [focused, setFocused] = useState('')
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    handleLogin()
+  }
+
+  const handleLogin = async ()=>{
+    setError('')
+    setSuccess('')
+    try{
+      const res = await fetch(`${API_ORIGIN}/client/auth/login`,{
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email: username, password }),
+      });
+
+      const data = await res.json();
+
+      if(data.success){
+        setSuccess(data.message || "Logged in successfully");
+        setUsername("");
+        setPassword("");
+        await refetch();
+        router.push("/portal");
+      } else {
+        setError(data.message || "Invalid credentials");
+      }
+    } catch(err){
+      setError("Something went wrong. Please try again.");
+      console.error(err.message);
+    }
+  }
 
   return (
     <section className="flex flex-col justify-center items-center bg-white min-h-screen 
@@ -21,7 +63,21 @@ export default function Login() {
           <p className="text-sm text-gray-500 mt-1">Sign in to continue</p>
         </div>
 
-        <form className="flex flex-col gap-5">
+        {error && (
+          <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 mb-5">
+            <CircleAlert className="w-4 h-4 shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
+
+        {success && (
+          <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-600 text-sm rounded-xl px-4 py-3 mb-5">
+            <CircleCheck className="w-4 h-4 shrink-0" />
+            <span>{success}</span>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="relative">
             <label className={`absolute left-11 transition-all duration-300 pointer-events-none ${
               focused === 'username' || username
