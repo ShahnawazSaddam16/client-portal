@@ -25,7 +25,7 @@ export default function Header() {
         <div className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-900">
           <User2 className="w-4 h-4 text-white" />
         </div>
-        <span className="font-medium text-sm text-white">Developer</span>
+        <span className="font-medium text-sm text-white">Client</span>
       </div>
     </nav>
   );
