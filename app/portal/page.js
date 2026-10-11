@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/components/context/AuthContext';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/context/AuthContext";
+import SideBar from "@/components/app-shell/SideBar";
 
 export default function PortalPage() {
   const router = useRouter();
@@ -10,7 +11,7 @@ export default function PortalPage() {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace('/');
+      router.replace("/");
     }
   }, [loading, user, router]);
 
@@ -29,16 +30,13 @@ export default function PortalPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6">
-      <div className="w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-medium uppercase tracking-[0.2em] text-blue-600">Client Portal</p>
-        <h1 className="mt-4 text-3xl font-bold text-slate-900">
-          Welcome back, {user.username || user.email || 'Client'}
-        </h1>
-        <p className="mt-3 text-slate-600">
-          Your portal dashboard is ready to be built out.
-        </p>
-      </div>
+    <main className="flex min-h-screen bg-white">
+      <SideBar />
+      <main className="flex-1 md:ml-0 w-full">
+        <div className="p-6 md:p-8 pt-20 md:pt-8">
+          <h1>Hello</h1>
+        </div>
+      </main>
     </main>
   );
 }
