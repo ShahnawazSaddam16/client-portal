@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/context/AuthContext";
 import SideBar from "@/components/app-shell/SideBar";
+import Stats from "@/components/Portal/Welcome/Stats";
 
 export default function PortalPage() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function PortalPage() {
       <SideBar />
       <main className="flex-1 md:ml-0 w-full">
         <div className="p-6 md:p-8 pt-20 md:pt-8">
-          <h1>Hello</h1>
+          <Stats />
         </div>
       </main>
     </main>
