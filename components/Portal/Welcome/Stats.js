@@ -31,20 +31,20 @@ function StatCard({ label, value, delay }) {
 
   return (
     <div
-      className="stats-rise rounded-2xl bg-white p-6 shadow-lg shadow-blue-600/10 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-600/20"
+      className="stats-rise bg-white border border-gray-100 rounded-xl shadow-sm p-5 w-full sm:w-[220px] transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
       style={{ animationDelay: `${delay}ms` }}
     >
-      <p className="text-sm font-medium uppercase tracking-wide text-blue-600/70">{label}</p>
-      <p className="mt-3 text-5xl font-bold text-blue-600">{count}</p>
+      <h1 className="text-gray-500 text-sm font-medium">{label}</h1>
+      <p className="text-blue-600 text-3xl font-bold mt-1">{count}</p>
     </div>
   );
 }
 
 function Skeleton() {
   return (
-    <div className="grid gap-6 sm:grid-cols-2">
+    <div className="flex flex-col sm:flex-row justify-start items-start gap-5 mt-6 w-full">
       {[0, 1].map((i) => (
-        <div key={i} className="h-36 animate-pulse rounded-2xl bg-blue-600/10" />
+        <div key={i} className="h-[98px] w-full sm:w-[220px] animate-pulse rounded-xl bg-gray-100" />
       ))}
     </div>
   );
@@ -92,7 +92,7 @@ export default function Stats() {
   }, [userId]);
 
   return (
-    <div className="min-h-screen bg-white p-6 sm:p-10">
+    <section className="flex flex-col items-start justify-start w-full">
       <style>{`
         @keyframes statsRise {
           from { opacity: 0; transform: translateY(16px); }
@@ -106,58 +106,61 @@ export default function Stats() {
         .stats-slide { opacity: 0; animation: statsSlide 0.5s ease-out forwards; }
       `}</style>
 
-      <div className="mx-auto max-w-4xl">
-        <div className="stats-rise">
-          <p className="text-sm font-medium text-blue-600/70">Welcome back</p>
-          <h1 className="mt-1 text-3xl font-bold text-blue-600 sm:text-4xl">{user?.username}</h1>
-        </div>
-
-        <div className="mt-10">
-          {loading && <Skeleton />}
-
-          {!loading && error && (
-            <div className="stats-rise rounded-2xl bg-blue-600/10 p-6 text-blue-600">{error}</div>
-          )}
-
-          {!loading && !error && data && (
-            <>
-              <div className="grid gap-6 sm:grid-cols-2">
-                <StatCard label="Total Projects" value={data.totalProjects} delay={0} />
-                <StatCard label="Ongoing Projects" value={data.totalOngoingProjects} delay={120} />
-              </div>
-
-              <div className="mt-12">
-                <h2 className="stats-rise text-xl font-semibold text-blue-600" style={{ animationDelay: '240ms' }}>
-                  Active Projects
-                </h2>
-
-                {data.ongoingProjects.length === 0 ? (
-                  <p className="stats-rise mt-4 text-blue-600/60" style={{ animationDelay: '300ms' }}>
-                    No active projects right now.
-                  </p>
-                ) : (
-                  <ul className="mt-4 space-y-3">
-                    {data.ongoingProjects.map((project, index) => (
-                      <li
-                        key={project._id}
-                        className="stats-slide flex items-center justify-between rounded-xl bg-white px-5 py-4 shadow-md shadow-blue-600/10 transition-all duration-300 hover:translate-x-1 hover:shadow-lg hover:shadow-blue-600/20"
-                        style={{ animationDelay: `${300 + index * 80}ms` }}
-                      >
-                        <span className="font-medium text-blue-600">
-                          {project.name || project.title || 'Untitled project'}
-                        </span>
-                        <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white">
-                          {project.status}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+      <div className="stats-rise max-w-[320px] sm:max-w-2xl space-y-3">
+        <h1 className="w-full text-[25px] sm:text-[36px] font-extrabold text-gray-950">
+          Welcome,{' '}
+          <span className="text-blue-600">{user?.username || 'Guest'}</span>
+        </h1>
+        <p className="text-gray-500 text-sm sm:text-[17px]">
+          Track your projects, progress, and updates from one place.
+        </p>
       </div>
-    </div>
+
+      {loading && <Skeleton />}
+
+      {!loading && error && (
+        <div className="stats-rise mt-6 w-full rounded-xl bg-white border border-gray-100 shadow-sm p-5 text-sm text-blue-600">
+          {error}
+        </div>
+      )}
+
+      {!loading && !error && data && (
+        <>
+          <div className="flex flex-col sm:flex-row justify-start items-start gap-5 mt-6 w-full">
+            <StatCard label="Total Projects" value={data.totalProjects} delay={0} />
+            <StatCard label="Projects Ongoing" value={data.totalOngoingProjects} delay={120} />
+          </div>
+
+          <div className="mt-10 w-full">
+            <h2 className="stats-rise text-lg sm:text-xl font-bold text-gray-950" style={{ animationDelay: '240ms' }}>
+              Active <span className="text-blue-600">Projects</span>
+            </h2>
+
+            {data.ongoingProjects.length === 0 ? (
+              <p className="stats-rise mt-4 text-gray-500 text-sm" style={{ animationDelay: '300ms' }}>
+                No active projects right now.
+              </p>
+            ) : (
+              <ul className="mt-4 space-y-3 w-full sm:max-w-2xl">
+                {data.ongoingProjects.map((project, index) => (
+                  <li
+                    key={project._id}
+                    className="stats-slide flex items-center justify-between bg-white border border-gray-100 rounded-xl shadow-sm px-5 py-4 transition-all duration-300 hover:translate-x-1 hover:shadow-md"
+                    style={{ animationDelay: `${300 + index * 80}ms` }}
+                  >
+                    <span className="text-gray-950 text-sm sm:text-base font-medium">
+                      {project.projectName || 'Untitled project'}
+                    </span>
+                    <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-medium text-white">
+                      {project.status}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </>
+      )}
+    </section>
   );
 }
