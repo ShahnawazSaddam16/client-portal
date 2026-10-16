@@ -13,8 +13,8 @@ const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] }
 const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN
 
 const links = [
-  { href: '/client', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/client/projects', label: 'Projects', icon: FolderKanban },
+  { href: '/portal', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/portal/projects', label: 'Projects', icon: FolderKanban },
   { href: '/client/messages', label: 'Notifications', icon: MessageSquare },
   { href: '/client/settings', label: 'Settings', icon: Settings },
 ]
