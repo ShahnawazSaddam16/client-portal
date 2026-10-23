@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
 import 'swiper/css';
@@ -175,6 +176,16 @@ function ProjectCard({ project, index }) {
         </div>
 
         <ProgressBlock progress={project.projectProgress} />
+
+        <div>
+          <Link
+            href={`/portal/projects/${project._id}`}
+            className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-blue-700 hover:shadow-md"
+          >
+            View Progress
+            <span aria-hidden="true">→</span>
+          </Link>
+        </div>
 
         {links.length > 0 && (
           <div className="mt-auto flex flex-col gap-2 border-t border-gray-100 pt-4">
