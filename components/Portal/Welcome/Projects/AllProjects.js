@@ -34,8 +34,23 @@ function StatusBadge({ status }) {
 function ProjectImages({ images = [], name }) {
   if (!images.length) {
     return (
-      <div className="h-48 w-full bg-gray-50 flex items-center justify-center text-gray-400 text-sm">
-        No images
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gray-50 text-gray-400">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="28"
+          height="28"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <circle cx="9" cy="9" r="2" />
+          <path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21" />
+        </svg>
+        <span className="text-sm">No images</span>
       </div>
     );
   }
@@ -45,97 +60,125 @@ function ProjectImages({ images = [], name }) {
       <img
         src={images[0]}
         alt={name || 'Project image'}
-        className="h-48 w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover"
         loading="lazy"
       />
     );
   }
 
   return (
-    <Swiper
-      modules={[Navigation, Pagination]}
-      navigation
-      pagination={{ clickable: true }}
-      spaceBetween={0}
-      slidesPerView={1}
-      className="h-48 w-full project-swiper"
-    >
-      {images.map((src, i) => (
-        <SwiperSlide key={`${src}-${i}`}>
-          <img
-            src={src}
-            alt={`${name || 'Project'} ${i + 1}`}
-            className="h-48 w-full object-cover"
-            loading="lazy"
-          />
-        </SwiperSlide>
-      ))}
-    </Swiper>
+    <div className="absolute inset-0">
+      <Swiper
+        modules={[Navigation, Pagination]}
+        navigation
+        pagination={{ clickable: true }}
+        spaceBetween={0}
+        slidesPerView={1}
+        className="project-swiper"
+        style={{ width: '100%', height: '100%' }}
+      >
+        {images.map((src, i) => (
+          <SwiperSlide key={`${src}-${i}`}>
+            <img
+              src={src}
+              alt={`${name || 'Project'} ${i + 1}`}
+              className="h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+            />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
   );
 }
 
 function ProgressBlock({ progress }) {
-  if (!progress) return null;
+  const items = (Array.isArray(progress) ? progress : [progress])
+    .map((p) => String(p ?? '').trim())
+    .filter(Boolean);
 
-  const match = String(progress).trim().match(/^(\d{1,3})\s*%?$/);
+  if (!items.length) return null;
 
-  if (match) {
-    const pct = Math.min(Number(match[1]), 100);
-    return (
-      <div>
-        <div className="flex justify-between text-xs text-gray-500 mb-1">
-          <span>Progress</span>
-          <span className="text-blue-600 font-semibold">{pct}%</span>
-        </div>
-        <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
-          <div className="h-full rounded-full bg-blue-600 transition-all duration-700" style={{ width: `${pct}%` }} />
-        </div>
-      </div>
-    );
-  }
+  const percentItems = items.filter((p) => /^\d{1,3}\s*%?$/.test(p));
+  const textItems = items.filter((p) => !/^\d{1,3}\s*%?$/.test(p));
+  const pct = percentItems.length
+    ? Math.min(parseInt(percentItems[percentItems.length - 1], 10), 100)
+    : null;
 
   return (
-    <div>
-      <p className="text-xs text-gray-500 mb-1">Progress</p>
-      <p className="text-sm text-gray-950 leading-relaxed">{progress}</p>
+    <div className="flex flex-col gap-3">
+      {pct !== null && (
+        <div>
+          <div className="mb-1.5 flex items-center justify-between text-xs text-gray-500">
+            <span>Progress</span>
+            <span className="font-semibold text-blue-600">{pct}%</span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
+            <div
+              className="h-full rounded-full bg-blue-600 transition-all duration-700"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      {textItems.length > 0 && (
+        <div>
+          {pct === null && <p className="mb-1.5 text-xs text-gray-500">Progress</p>}
+          <ul className="flex flex-col gap-1.5">
+            {textItems.map((t, i) => (
+              <li key={`${t}-${i}`} className="flex items-start gap-2 text-sm leading-relaxed text-gray-950">
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
+                <span>{t}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MetaItem({ label, value }) {
+  return (
+    <div className="flex min-w-0 flex-col gap-0.5 pr-6 [&:not(:first-child)]:pl-6 [&:not(:last-child)]:border-r [&:not(:last-child)]:border-gray-200">
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className="truncate text-sm font-semibold text-gray-950">{value || '—'}</p>
     </div>
   );
 }
 
 function ProjectCard({ project, index }) {
   const links = Array.isArray(project.projectLinks) ? project.projectLinks.filter(Boolean) : [];
+  const images = Array.isArray(project.projectImages) ? project.projectImages : [];
 
   return (
     <article
-      className="stats-rise bg-white border border-gray-100 rounded-xl shadow-sm overflow-hidden flex flex-col transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+      className="stats-rise flex w-full flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm transition-shadow duration-300 hover:shadow-md md:flex-row"
       style={{ animationDelay: `${Math.min(index, 8) * 80}ms` }}
     >
-      <ProjectImages images={project.projectImages} name={project.projectName} />
+      <div className="relative h-56 w-full shrink-0 bg-gray-50 md:h-auto md:min-h-[280px] md:w-[300px] lg:w-[380px]">
+        <ProjectImages images={images} name={project.projectName} />
+      </div>
 
-      <div className="p-5 flex flex-col gap-4 flex-1">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="text-gray-950 text-base sm:text-lg font-bold leading-tight">
+      <div className="flex min-w-0 flex-1 flex-col gap-5 p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h3 className="min-w-0 flex-1 text-lg font-bold leading-tight text-gray-950 sm:text-xl">
             {project.projectName || 'Untitled project'}
           </h3>
           <StatusBadge status={project.status} />
         </div>
 
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-gray-500">Type</p>
-            <p className="text-sm font-medium text-gray-950">{project.projectType || '—'}</p>
-          </div>
-          <div>
-            <p className="text-xs text-gray-500">Duration</p>
-            <p className="text-sm font-medium text-gray-950">{project.projectDuration || '—'}</p>
-          </div>
+        <div className="flex flex-wrap gap-y-3 rounded-lg bg-gray-50 px-4 py-3">
+          <MetaItem label="Type" value={project.projectType} />
+          <MetaItem label="Duration" value={project.projectDuration} />
         </div>
 
         <ProgressBlock progress={project.projectProgress} />
 
         {links.length > 0 && (
-          <div className="mt-auto pt-2 border-t border-gray-100">
-            <p className="text-xs text-gray-500 mb-2">Links</p>
+          <div className="mt-auto flex flex-col gap-2 border-t border-gray-100 pt-4">
+            <p className="text-xs text-gray-500">Links</p>
             <div className="flex flex-wrap gap-2">
               {links.map((link, i) => (
                 <a
@@ -143,7 +186,7 @@ function ProjectCard({ project, index }) {
                   href={link}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="rounded-full border border-blue-600 px-3 py-1 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+                  className="rounded-full border border-blue-600 px-4 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
                 >
                   Link {links.length > 1 ? i + 1 : ''} ↗
                 </a>
@@ -158,9 +201,9 @@ function ProjectCard({ project, index }) {
 
 function Skeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-6 w-full">
+    <div className="mt-6 flex w-full flex-col gap-5">
       {[0, 1, 2].map((i) => (
-        <div key={i} className="h-[380px] animate-pulse rounded-xl bg-gray-100" />
+        <div key={i} className="h-[300px] w-full animate-pulse rounded-xl bg-gray-100" />
       ))}
     </div>
   );
@@ -209,7 +252,6 @@ export default function AllProjects() {
     return () => controller.abort();
   }, [userId]);
 
-  // Base filters + any extra statuses that exist in the data
   const filters = useMemo(() => {
     const extra = [...new Set(projects.map((p) => p.status).filter(Boolean))].filter(
       (s) => !BASE_FILTERS.includes(s)
@@ -231,13 +273,17 @@ export default function AllProjects() {
   );
 
   return (
-    <section className="flex flex-col items-start justify-start w-full">
+    <section className="flex w-full flex-col items-start justify-start">
       <style>{`
         @keyframes statsRise {
           from { opacity: 0; transform: translateY(16px); }
           to { opacity: 1; transform: translateY(0); }
         }
         .stats-rise { opacity: 0; animation: statsRise 0.6s ease-out forwards; }
+
+        @media (prefers-reduced-motion: reduce) {
+          .stats-rise { opacity: 1; animation: none; }
+        }
 
         .project-swiper {
           --swiper-theme-color: #2563eb;
@@ -260,19 +306,20 @@ export default function AllProjects() {
         .project-swiper .swiper-pagination-bullet-active { background: #2563eb; opacity: 1; }
       `}</style>
 
-      {/* Header */}
-      <div className="stats-rise max-w-[320px] sm:max-w-2xl space-y-3">
-        <h1 className="w-full text-[25px] sm:text-[36px] font-extrabold text-gray-950">
+      <div className="stats-rise max-w-[320px] space-y-3 sm:max-w-2xl">
+        <h1 className="w-full text-[25px] font-extrabold text-gray-950 sm:text-[36px]">
           All <span className="text-blue-600">Projects</span>
         </h1>
-        <p className="text-gray-500 text-sm sm:text-[17px]">
+        <p className="text-sm text-gray-500 sm:text-[17px]">
           Browse every project and filter by its current status.
         </p>
       </div>
 
-      {/* Filters */}
       {!loading && !error && (
-        <div className="stats-rise mt-6 w-full flex gap-2 overflow-x-auto pb-1" style={{ animationDelay: '120ms' }}>
+        <div
+          className="stats-rise mt-6 flex w-full gap-2 overflow-x-auto pb-1"
+          style={{ animationDelay: '120ms' }}
+        >
           {filters.map((f) => {
             const active = filter === f;
             return (
@@ -281,8 +328,8 @@ export default function AllProjects() {
                 onClick={() => setFilter(f)}
                 className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-4 py-2 text-sm font-medium transition-all duration-300 ${
                   active
-                    ? 'bg-blue-600 border-blue-600 text-white shadow-sm'
-                    : 'bg-white border-gray-100 text-gray-500 hover:border-blue-600 hover:text-blue-600'
+                    ? 'border-blue-600 bg-blue-600 text-white shadow-sm'
+                    : 'border-gray-100 bg-white text-gray-500 hover:border-blue-600 hover:text-blue-600'
                 }`}
               >
                 {f}
@@ -302,7 +349,7 @@ export default function AllProjects() {
       {loading && <Skeleton />}
 
       {!loading && error && (
-        <div className="stats-rise mt-6 w-full rounded-xl bg-white border border-gray-100 shadow-sm p-5 text-sm text-blue-600">
+        <div className="stats-rise mt-6 w-full rounded-xl border border-gray-100 bg-white p-5 text-sm text-blue-600 shadow-sm">
           {error}
         </div>
       )}
@@ -310,11 +357,11 @@ export default function AllProjects() {
       {!loading && !error && (
         <>
           {visible.length === 0 ? (
-            <div className="stats-rise mt-6 w-full rounded-xl bg-white border border-gray-100 shadow-sm p-8 text-center text-gray-500 text-sm">
+            <div className="stats-rise mt-6 w-full rounded-xl border border-gray-100 bg-white p-8 text-center text-sm text-gray-500 shadow-sm">
               {filter === 'All' ? 'No projects yet.' : `No "${filter}" projects right now.`}
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 mt-6 w-full">
+            <div className="mt-6 flex w-full flex-col gap-5">
               {visible.map((project, index) => (
                 <ProjectCard key={project._id} project={project} index={index} />
               ))}
