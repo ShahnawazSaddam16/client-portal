@@ -34,7 +34,7 @@ function StatusBadge({ status }) {
 function Gallery({ images = [], name }) {
   if (!images.length) {
     return (
-      <div className="flex h-full min-h-[260px] w-full flex-col items-center justify-center gap-2 bg-gray-50 text-gray-400">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gray-50 text-gray-400">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="32"
@@ -56,30 +56,36 @@ function Gallery({ images = [], name }) {
   }
 
   if (images.length === 1) {
-    return <img src={images[0]} alt={name || 'Project image'} className="h-full w-full object-cover" />;
+    return (
+      <div className="absolute inset-0">
+        <img src={images[0]} alt={name || 'Project image'} className="h-full w-full object-contain" />
+      </div>
+    );
   }
 
   return (
-    <Swiper
-      modules={[Navigation, Pagination]}
-      navigation
-      pagination={{ clickable: true }}
-      spaceBetween={0}
-      slidesPerView={1}
-      className="project-swiper"
-      style={{ width: '100%', height: '100%' }}
-    >
-      {images.map((src, i) => (
-        <SwiperSlide key={`${src}-${i}`}>
-          <img
-            src={src}
-            alt={`${name || 'Project'} ${i + 1}`}
-            className="h-full w-full object-cover"
-            referrerPolicy="no-referrer"
-          />
-        </SwiperSlide>
-      ))}
-    </Swiper>
+    <div className="absolute inset-0">
+      <Swiper
+        modules={[Navigation, Pagination]}
+        navigation
+        pagination={{ clickable: true }}
+        spaceBetween={0}
+        slidesPerView={1}
+        className="project-swiper"
+        style={{ width: '100%', height: '100%' }}
+      >
+        {images.map((src, i) => (
+          <SwiperSlide key={`${src}-${i}`}>
+            <img
+              src={src}
+              alt={`${name || 'Project'} ${i + 1}`}
+              className="h-full w-full object-contain"
+              referrerPolicy="no-referrer"
+            />
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
   );
 }
 
@@ -196,7 +202,7 @@ export default function ProjectById() {
   const images = Array.isArray(project?.projectImages) ? project.projectImages : [];
 
   return (
-    <section className="flex w-full flex-col items-start justify-start">
+    <section className="flex w-full min-w-0 max-w-full flex-col items-start justify-start">
       <style>{`
         @keyframes statsRise {
           from { opacity: 0; transform: translateY(16px); }
@@ -252,7 +258,7 @@ export default function ProjectById() {
       )}
 
       {!loading && !error && project && (
-        <div className="mt-6 flex w-full flex-col gap-6">
+        <div className="mt-6 flex w-full min-w-0 flex-col gap-6">
           <div className="stats-rise flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 flex-1 space-y-2">
               <p className="text-xs font-medium uppercase tracking-widest text-blue-600">
@@ -274,7 +280,7 @@ export default function ProjectById() {
 
           <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3">
             <div
-              className="stats-rise flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-sm sm:p-8 lg:col-span-2"
+              className="stats-rise flex min-w-0 flex-col gap-6 rounded-2xl bg-white p-6 shadow-sm sm:p-8 lg:col-span-2"
               style={{ animationDelay: '160ms' }}
             >
               <div className="space-y-1">
@@ -328,7 +334,7 @@ export default function ProjectById() {
             </div>
 
             <div
-              className="stats-rise flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-sm sm:p-8"
+              className="stats-rise flex min-w-0 flex-col gap-6 rounded-2xl bg-white p-6 shadow-sm sm:p-8"
               style={{ animationDelay: '240ms' }}
             >
               <h2 className="text-lg font-bold text-gray-950 sm:text-xl">
