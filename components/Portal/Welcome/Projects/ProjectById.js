@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -13,11 +14,64 @@ import { useAuth } from '@/components/context/AuthContext';
 const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
 
 const statusStyles = {
-  'In Progress': 'bg-blue-600 text-white',
-  Completed: 'bg-blue-50 text-blue-600',
+  'In Progress': 'bg-yellow-100 text-yellow-600',
+  Completed: 'bg-green-100 text-green-600',
   Pending: 'bg-gray-100 text-blue-600',
   'Not Started': 'bg-gray-100 text-gray-600',
 };
+
+const tones = {
+  green: {
+    ring: '#16a34a',
+    track: '#dcfce7',
+    bar: 'bg-green-600',
+    text: 'text-green-600',
+    iconBg: 'bg-green-100 text-green-600',
+    line: 'bg-green-100',
+    panel: 'bg-green-50',
+  },
+  yellow: {
+    ring: '#eab308',
+    track: '#fef9c3',
+    bar: 'bg-yellow-500',
+    text: 'text-yellow-600',
+    iconBg: 'bg-yellow-100 text-yellow-600',
+    line: 'bg-yellow-100',
+    panel: 'bg-yellow-50',
+  },
+  gray: {
+    ring: '#9ca3af',
+    track: '#f3f4f6',
+    bar: 'bg-gray-400',
+    text: 'text-gray-500',
+    iconBg: 'bg-gray-100 text-gray-500',
+    line: 'bg-gray-100',
+    panel: 'bg-gray-50',
+  },
+};
+
+function getTone(pct, status) {
+  if (status === 'Completed') return tones.green;
+  if (status === 'In Progress') return tones.yellow;
+  if (status === 'Pending' || status === 'Not Started') return tones.gray;
+  if (pct !== null) {
+    if (pct >= 100) return tones.green;
+    if (pct > 0) return tones.yellow;
+  }
+  return tones.gray;
+}
+
+function formatDate(value) {
+  if (!value) return '';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString('en-GB', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  });
+}
 
 function StatusBadge({ status }) {
   return (
@@ -31,7 +85,132 @@ function StatusBadge({ status }) {
   );
 }
 
-function Gallery({ images = [], name }) {
+function CheckIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  );
+}
+
+function ClockIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 2" />
+    </svg>
+  );
+}
+
+function CircleIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="8" />
+    </svg>
+  );
+}
+
+function ImageViewer({ images, startIndex, name, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/80 p-4 sm:p-8"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="flex h-full max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-3">
+          <h3 className="min-w-0 flex-1 truncate text-base font-bold text-gray-950 sm:text-lg">
+            {name || 'Project images'}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-full border border-blue-600 px-4 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+          >
+            Close ✕
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 bg-gray-50">
+          <Swiper
+            modules={[Navigation, Pagination]}
+            navigation
+            pagination={{ clickable: true }}
+            initialSlide={startIndex}
+            spaceBetween={0}
+            slidesPerView={1}
+            className="project-swiper viewer-swiper"
+            style={{ width: '100%', height: '100%' }}
+          >
+            {images.map((src, i) => (
+              <SwiperSlide key={`${src}-${i}`}>
+                <div className="flex h-full w-full items-center justify-center px-4 pb-10 pt-4">
+                  <img
+                    src={src}
+                    alt={`${name || 'Project'} ${i + 1}`}
+                    className="max-h-full max-w-full rounded-lg object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function Gallery({ images = [], name, onOpen }) {
   if (!images.length) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gray-50 text-gray-400">
@@ -58,7 +237,12 @@ function Gallery({ images = [], name }) {
   if (images.length === 1) {
     return (
       <div className="absolute inset-0">
-        <img src={images[0]} alt={name || 'Project image'} className="h-full w-full object-contain" />
+        <img
+          src={images[0]}
+          alt={name || 'Project image'}
+          className="h-full w-full cursor-zoom-in object-contain"
+          onClick={() => onOpen(0)}
+        />
       </div>
     );
   }
@@ -79,8 +263,9 @@ function Gallery({ images = [], name }) {
             <img
               src={src}
               alt={`${name || 'Project'} ${i + 1}`}
-              className="h-full w-full object-contain"
+              className="h-full w-full cursor-zoom-in object-contain"
               referrerPolicy="no-referrer"
+              onClick={() => onOpen(i)}
             />
           </SwiperSlide>
         ))}
@@ -89,7 +274,7 @@ function Gallery({ images = [], name }) {
   );
 }
 
-function ProgressRing({ value }) {
+function ProgressRing({ value, tone }) {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (value / 100) * circumference;
@@ -97,13 +282,13 @@ function ProgressRing({ value }) {
   return (
     <div className="relative flex h-36 w-36 shrink-0 items-center justify-center">
       <svg width="144" height="144" viewBox="0 0 144 144" className="-rotate-90">
-        <circle cx="72" cy="72" r={radius} fill="none" stroke="#eff6ff" strokeWidth="12" />
+        <circle cx="72" cy="72" r={radius} fill="none" stroke={tone.track} strokeWidth="12" />
         <circle
           cx="72"
           cy="72"
           r={radius}
           fill="none"
-          stroke="#2563eb"
+          stroke={tone.ring}
           strokeWidth="12"
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -146,6 +331,7 @@ export default function ProjectById() {
   const [project, setProject] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [viewerIndex, setViewerIndex] = useState(null);
 
   useEffect(() => {
     if (!userId || !id) return;
@@ -198,6 +384,9 @@ export default function ProjectById() {
     };
   }, [project]);
 
+  const tone = getTone(pct, project?.status);
+  const StepIcon = tone === tones.green ? CheckIcon : tone === tones.yellow ? ClockIcon : CircleIcon;
+
   const links = Array.isArray(project?.projectLinks) ? project.projectLinks.filter(Boolean) : [];
   const images = Array.isArray(project?.projectImages) ? project.projectImages : [];
 
@@ -233,6 +422,8 @@ export default function ProjectById() {
         }
         .project-swiper .swiper-pagination-bullet { background: #fff; opacity: 0.8; }
         .project-swiper .swiper-pagination-bullet-active { background: #2563eb; opacity: 1; }
+        .viewer-swiper .swiper-pagination-bullet { background: #9ca3af; opacity: 0.8; }
+        .viewer-swiper .swiper-pagination-bullet-active { background: #2563eb; opacity: 1; }
       `}</style>
 
       <Link
@@ -275,7 +466,7 @@ export default function ProjectById() {
             className="stats-rise relative h-[260px] w-full overflow-hidden rounded-2xl bg-gray-50 shadow-sm sm:h-[360px] lg:h-[440px]"
             style={{ animationDelay: '80ms' }}
           >
-            <Gallery images={images} name={project.projectName} />
+            <Gallery images={images} name={project.projectName} onOpen={setViewerIndex} />
           </div>
 
           <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3">
@@ -293,16 +484,16 @@ export default function ProjectById() {
               </div>
 
               {pct !== null && (
-                <div className="flex flex-col items-center gap-6 rounded-xl bg-gray-50 p-6 sm:flex-row">
-                  <ProgressRing value={pct} />
+                <div className={`flex flex-col items-center gap-6 rounded-xl p-6 sm:flex-row ${tone.panel}`}>
+                  <ProgressRing value={pct} tone={tone} />
                   <div className="flex w-full min-w-0 flex-1 flex-col gap-3">
                     <div className="flex items-center justify-between text-xs text-gray-500">
                       <span>Overall completion</span>
-                      <span className="font-semibold text-blue-600">{pct}%</span>
+                      <span className={`font-semibold ${tone.text}`}>{pct}%</span>
                     </div>
                     <div className="h-2.5 w-full overflow-hidden rounded-full bg-white">
                       <div
-                        className="h-full rounded-full bg-blue-600 transition-all duration-700"
+                        className={`h-full rounded-full transition-all duration-700 ${tone.bar}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
@@ -315,10 +506,12 @@ export default function ProjectById() {
                   {steps.map((s, i) => (
                     <li key={`${s}-${i}`} className="relative flex gap-4 pb-6 last:pb-0">
                       {i !== steps.length - 1 && (
-                        <span className="absolute left-[11px] top-7 h-[calc(100%-1.75rem)] w-px bg-blue-100" />
+                        <span className={`absolute left-[11px] top-7 h-[calc(100%-1.75rem)] w-px ${tone.line}`} />
                       )}
-                      <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-blue-600 text-[11px] font-semibold text-white">
-                        {i + 1}
+                      <span
+                        className={`relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${tone.iconBg}`}
+                      >
+                        <StepIcon />
                       </span>
                       <p className="pt-0.5 text-sm leading-relaxed text-gray-950">{s}</p>
                     </li>
@@ -343,7 +536,7 @@ export default function ProjectById() {
 
               <div className="flex flex-col gap-3">
                 <Detail label="Type" value={project.projectType} />
-                <Detail label="Duration" value={project.projectDuration} />
+                <Detail label="Duration" value={formatDate(project.projectDuration)} />
                 <Detail label="Status" value={project.status} />
               </div>
 
@@ -368,6 +561,15 @@ export default function ProjectById() {
             </div>
           </div>
         </div>
+      )}
+
+      {viewerIndex !== null && images.length > 0 && (
+        <ImageViewer
+          images={images}
+          startIndex={viewerIndex}
+          name={project?.projectName}
+          onClose={() => setViewerIndex(null)}
+        />
       )}
     </section>
   );
