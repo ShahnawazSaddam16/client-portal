@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination } from 'swiper/modules';
@@ -32,7 +33,77 @@ function StatusBadge({ status }) {
   );
 }
 
-function ProjectImages({ images = [], name }) {
+function ImageViewer({ images, startIndex, name, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-950/80 p-4 sm:p-8"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="flex h-full max-h-[88vh] w-full max-w-5xl flex-col overflow-hidden rounded-xl border border-gray-100 bg-white shadow-md"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-5 py-3">
+          <h3 className="min-w-0 flex-1 truncate text-base font-bold text-gray-950 sm:text-lg">
+            {name || 'Project images'}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="rounded-full border border-blue-600 px-4 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-600 hover:text-white"
+          >
+            Close ✕
+          </button>
+        </div>
+
+        <div className="min-h-0 flex-1 bg-gray-50">
+          <Swiper
+            modules={[Navigation, Pagination]}
+            navigation
+            pagination={{ clickable: true }}
+            initialSlide={startIndex}
+            spaceBetween={0}
+            slidesPerView={1}
+            className="project-swiper viewer-swiper"
+            style={{ width: '100%', height: '100%' }}
+          >
+            {images.map((src, i) => (
+              <SwiperSlide key={`${src}-${i}`}>
+                <div className="flex h-full w-full items-center justify-center px-4 pb-10 pt-4">
+                  <img
+                    src={src}
+                    alt={`${name || 'Project'} ${i + 1}`}
+                    className="max-h-full max-w-full rounded-lg object-contain"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+}
+
+function ProjectImages({ images = [], name, onOpen }) {
   if (!images.length) {
     return (
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-gray-50 text-gray-400">
@@ -61,8 +132,9 @@ function ProjectImages({ images = [], name }) {
       <img
         src={images[0]}
         alt={name || 'Project image'}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full cursor-zoom-in object-contain"
         loading="lazy"
+        onClick={() => onOpen(0)}
       />
     );
   }
@@ -83,8 +155,9 @@ function ProjectImages({ images = [], name }) {
             <img
               src={src}
               alt={`${name || 'Project'} ${i + 1}`}
-              className="h-full w-full object-cover"
+              className="h-full w-full cursor-zoom-in object-contain"
               referrerPolicy="no-referrer"
+              onClick={() => onOpen(i)}
             />
           </SwiperSlide>
         ))}
@@ -130,7 +203,7 @@ function ProgressBlock({ progress }) {
             {textItems.map((t, i) => (
               <li key={`${t}-${i}`} className="flex items-start gap-2 text-sm leading-relaxed text-gray-950">
                 <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-blue-600" />
-                <span>{t}</span>
+                <span className="line-clamp-3">{t}</span>
               </li>
             ))}
           </ul>
@@ -150,6 +223,7 @@ function MetaItem({ label, value }) {
 }
 
 function ProjectCard({ project, index }) {
+  const [viewerIndex, setViewerIndex] = useState(null);
   const links = Array.isArray(project.projectLinks) ? project.projectLinks.filter(Boolean) : [];
   const images = Array.isArray(project.projectImages) ? project.projectImages : [];
 
@@ -159,7 +233,7 @@ function ProjectCard({ project, index }) {
       style={{ animationDelay: `${Math.min(index, 8) * 80}ms` }}
     >
       <div className="relative h-56 w-full shrink-0 bg-gray-50 md:h-auto md:min-h-[280px] md:w-[300px] lg:w-[380px]">
-        <ProjectImages images={images} name={project.projectName} />
+        <ProjectImages images={images} name={project.projectName} onOpen={setViewerIndex} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-5 p-5 sm:p-6">
@@ -206,6 +280,15 @@ function ProjectCard({ project, index }) {
           </div>
         )}
       </div>
+
+      {viewerIndex !== null && images.length > 0 && (
+        <ImageViewer
+          images={images}
+          startIndex={viewerIndex}
+          name={project.projectName}
+          onClose={() => setViewerIndex(null)}
+        />
+      )}
     </article>
   );
 }
@@ -315,6 +398,8 @@ export default function AllProjects() {
         }
         .project-swiper .swiper-pagination-bullet { background: #fff; opacity: 0.8; }
         .project-swiper .swiper-pagination-bullet-active { background: #2563eb; opacity: 1; }
+        .viewer-swiper .swiper-pagination-bullet { background: #9ca3af; opacity: 0.8; }
+        .viewer-swiper .swiper-pagination-bullet-active { background: #2563eb; opacity: 1; }
       `}</style>
 
       <div className="stats-rise max-w-[320px] space-y-3 sm:max-w-2xl">
