@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { Inter } from 'next/font/google'
@@ -24,11 +24,40 @@ export default function SideBar() {
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
   const [logoutError, setLogoutError] = useState('')
+  const [count, setCount] = useState(0)
   const pathname = usePathname()
   const router = useRouter()
   const { user, setUser } = useAuth()
 
   const initial = user?.username?.charAt(0)?.toUpperCase() || 'U'
+  const userId = user?._id || user?.id
+
+  useEffect(() => {
+    if (!userId) return
+
+    const controller = new AbortController()
+
+    const loadCount = async () => {
+      try {
+        const res = await fetch(`${API_ORIGIN}/client/messages/user-notification`, {
+          credentials: 'include',
+          method: 'GET',
+          signal: controller.signal,
+        })
+
+        const json = await res.json()
+
+        if (res.ok && json.success && Array.isArray(json.data)) {
+          setCount(json.data.length)
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError') setCount(0)
+      }
+    }
+
+    loadCount()
+    return () => controller.abort()
+  }, [userId, pathname])
 
   const handleLogout = async () => {
     try {
@@ -127,6 +156,7 @@ export default function SideBar() {
         <nav className="flex-1 px-3 py-6 space-y-1">
           {links.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
+            const showCount = href === '/portal/notifications' && count > 0;
             return (
               <Link
                 key={href}
@@ -145,6 +175,11 @@ export default function SideBar() {
                   }`}
                 />
                 <span className="text-sm font-medium">{label}</span>
+                {showCount && (
+                  <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-blue-600 px-1.5 text-xs font-semibold text-white">
+                    {count > 99 ? '99+' : count}
+                  </span>
+                )}
               </Link>
             )
           })}
