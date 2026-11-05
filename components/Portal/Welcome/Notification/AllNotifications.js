@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { Bell, BellOff, Mail, Clock, AlertCircle } from 'lucide-react';
+import { Bell, BellOff, Mail, Clock, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/context/AuthContext';
 
 const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
@@ -46,7 +46,7 @@ function Skeleton() {
   );
 }
 
-function NotificationItem({ item, delay }) {
+function NotificationItem({ item, delay, onDelete }) {
   const isNew = item.createdAt && Date.now() - new Date(item.createdAt).getTime() < 24 * 60 * 60 * 1000;
 
   return (
@@ -73,6 +73,13 @@ function NotificationItem({ item, delay }) {
           New
         </span>
       )}
+
+      <button
+        onClick={() => onDelete(item._id)}
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 transition-all duration-200 hover:bg-blue-600 hover:text-white active:scale-95"
+      >
+        <Trash2 size={16} />
+      </button>
     </li>
   );
 }
@@ -82,6 +89,9 @@ export default function AllNotifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deleteId, setDeleteId] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   const userId = user?._id || user?.id;
 
@@ -121,6 +131,42 @@ export default function AllNotifications() {
     return () => controller.abort();
   }, [userId]);
 
+  const openDelete = (id) => {
+    setDeleteError('');
+    setDeleteId(id);
+  };
+
+  const closeDelete = () => {
+    if (deleting) return;
+    setDeleteId(null);
+    setDeleteError('');
+  };
+
+  const handleDelete = async () => {
+    try {
+      setDeleting(true);
+      setDeleteError('');
+
+      const res = await fetch(`${API_ORIGIN}/client/messages/delete-notification/${deleteId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Failed to delete notification');
+      }
+
+      setNotifications((prev) => prev.filter((n) => n._id !== deleteId));
+      setDeleteId(null);
+    } catch (err) {
+      setDeleteError(err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const grouped = useMemo(() => groupNotifications(notifications), [notifications]);
 
   let runningIndex = 0;
@@ -136,8 +182,18 @@ export default function AllNotifications() {
           from { opacity: 0; transform: translateX(-12px); }
           to { opacity: 1; transform: translateX(0); }
         }
+        @keyframes dcFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes dcPop {
+          from { opacity: 0; transform: translateY(12px) scale(0.95); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
         .stats-rise { opacity: 0; animation: statsRise 0.6s ease-out forwards; }
         .stats-slide { opacity: 0; animation: statsSlide 0.5s ease-out forwards; }
+        .dc-fade { animation: dcFade 0.25s ease-out forwards; }
+        .dc-pop { animation: dcPop 0.3s ease-out forwards; }
       `}</style>
 
       <div className="stats-rise flex w-full sm:max-w-2xl items-start justify-between gap-4">
@@ -196,11 +252,54 @@ export default function AllNotifications() {
                 {list.map((item) => {
                   const delay = 180 + runningIndex * 80;
                   runningIndex += 1;
-                  return <NotificationItem key={item._id} item={item} delay={delay} />;
+                  return <NotificationItem key={item._id} item={item} delay={delay} onDelete={openDelete} />;
                 })}
               </ul>
             </div>
           ))}
+        </div>
+      )}
+
+      {deleteId !== null && (
+        <div
+          onClick={closeDelete}
+          className="dc-fade fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="dc-pop w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl shadow-blue-600/20"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+              <Trash2 size={22} />
+            </div>
+
+            <h3 className="mt-4 text-lg font-bold text-gray-900">Delete notification?</h3>
+            <p className="mt-1 text-sm text-gray-600">
+              This notification will be permanently removed. This action cannot be undone.
+            </p>
+
+            {deleteError && (
+              <p className="mt-3 rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-600">{deleteError}</p>
+            )}
+
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={closeDelete}
+                disabled={deleting}
+                className="flex-1 rounded-lg bg-blue-50 px-4 py-2.5 text-sm font-medium text-blue-600 transition-all duration-200 hover:bg-blue-100 active:scale-95 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-md shadow-blue-600/30 transition-all duration-200 hover:bg-blue-700 active:scale-95 disabled:opacity-70"
+              >
+                {deleting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+                {deleting ? 'Deleting' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>

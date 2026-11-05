@@ -15,7 +15,7 @@ const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN
 const links = [
   { href: '/portal', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portal/projects', label: 'Projects', icon: FolderKanban },
-  { href: '/portal/notifications', label: 'Notifications', icon: MessageSquare },
+  { href: '/portal/notification', label: 'Notifications', icon: MessageSquare },
   { href: '/client/settings', label: 'Settings', icon: Settings },
 ]
 
@@ -156,7 +156,7 @@ export default function SideBar() {
         <nav className="flex-1 px-3 py-6 space-y-1">
           {links.map(({ href, label, icon: Icon }) => {
             const isActive = pathname === href;
-            const showCount = href === '/portal/notifications' && count > 0;
+            const showCount = href === '/portal/notification' && count > 0;
             return (
               <Link
                 key={href}
