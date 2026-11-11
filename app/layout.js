@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { connection } from "next/server";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/context/AuthContext";
 import "./globals.css";
@@ -46,6 +48,11 @@ export const metadata = {
   },
 };
 
+async function DynamicMarker() {
+  await connection();
+  return null;
+}
+
 export default function RootLayout({ children }) {
   return (
     <html
@@ -53,6 +60,9 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Suspense fallback={null}>
+          <DynamicMarker />
+        </Suspense>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
