@@ -40,8 +40,13 @@ export default function Login() {
         setSuccess(data.message || "Logged in successfully");
         setEmail("");
         setPassword("");
-        await refetch();
-        router.push("/portal");
+        try {
+          await refetch();
+        } catch (e) {
+          console.error("refetch failed", e);
+        }
+        // full reload so AuthContext re-reads the cookie, then redirect
+        window.location.href = "/portal";
       } else {
         setError(data.message || "Invalid credentials");
       }

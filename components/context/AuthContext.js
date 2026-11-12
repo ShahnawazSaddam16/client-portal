@@ -39,7 +39,6 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      setLoading(true);
       const res = await fetch(`${API_ORIGIN}/client/auth/me`, {
         method: 'GET',
         credentials: 'include',
