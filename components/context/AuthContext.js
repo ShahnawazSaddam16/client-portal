@@ -31,12 +31,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const refetch = useCallback(async () => {
-    if (!API_ORIGIN) {
-      setUser(null);
-      setLoading(false);
-      return null;
-    }
-
     try {
       setLoading(true);
       const res = await fetch(`/api/proxy/client/auth/me`, {
@@ -63,14 +57,9 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [API_ORIGIN]);
+  }, []);
 
   const logout = useCallback(async () => {
-    if (!API_ORIGIN) {
-      setUser(null);
-      return;
-    }
-
     try {
       const res = await fetch(`/api/proxy/client/auth/logout`, {
         method: 'POST',
@@ -89,7 +78,7 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
     }
-  }, [API_ORIGIN]);
+  }, []);
 
   useEffect(() => {
     refetch();
