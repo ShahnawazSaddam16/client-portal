@@ -27,18 +27,12 @@ async function parseJsonResponse(response) {
 }
 
 export function AuthProvider({ children }) {
-  const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const refetch = useCallback(async () => {
-    if (!API_ORIGIN) {
-      setUser(null);
-      setLoading(false);
-      return null;
-    }
-
     try {
+      setLoading(true);
       const res = await fetch(`${API_ORIGIN}/client/auth/me`, {
         method: 'GET',
         credentials: 'include',
@@ -63,16 +57,11 @@ export function AuthProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [API_ORIGIN]);
+  }, []);
 
   const logout = useCallback(async () => {
-    if (!API_ORIGIN) {
-      setUser(null);
-      return;
-    }
-
     try {
-      const res = await fetch(`${API_ORIGIN}/client/auth/logout`, {
+      const res = await fetch(`/api/proxy/client/auth/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {
@@ -89,7 +78,7 @@ export function AuthProvider({ children }) {
     } finally {
       setUser(null);
     }
-  }, [API_ORIGIN]);
+  }, []);
 
   useEffect(() => {
     refetch();
@@ -98,12 +87,13 @@ export function AuthProvider({ children }) {
   const value = useMemo(
     () => ({
       user,
+      setUser,
       loading,
       refetch,
       logout,
       isAuthenticated: Boolean(user),
     }),
-    [user, loading, refetch, logout]
+    [user, setUser, loading, refetch, logout]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

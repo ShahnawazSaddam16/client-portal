@@ -11,7 +11,6 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useAuth } from '@/components/context/AuthContext';
 
-const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
 
 const statusStyles = {
   'In Progress': 'bg-yellow-100 text-yellow-600',
@@ -343,7 +342,7 @@ export default function ProjectById() {
         setLoading(true);
         setError('');
 
-        const res = await fetch(`${API_ORIGIN}/client/projects/user-project/${id}`, {
+        const res = await fetch(`/api/proxy/client/projects/user-project/${id}`, {
           credentials: 'include',
           method: 'GET',
           signal: controller.signal,

@@ -4,7 +4,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Bell, BellOff, Mail, Clock, AlertCircle, Trash2, Loader2 } from 'lucide-react';
 import { useAuth } from '@/components/context/AuthContext';
 
-const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
 
 function formatTime(value) {
   if (!value) return '';
@@ -105,7 +104,7 @@ export default function AllNotifications() {
         setLoading(true);
         setError('');
 
-        const res = await fetch(`${API_ORIGIN}/client/messages/user-notification`, {
+        const res = await fetch(`/api/proxy/client/messages/user-notification`, {
           credentials: 'include',
           method: 'GET',
         });
@@ -147,7 +146,7 @@ export default function AllNotifications() {
       setDeleting(true);
       setDeleteError('');
 
-      const res = await fetch(`${API_ORIGIN}/client/messages/delete-notification/${deleteId}`, {
+      const res = await fetch(`/api/proxy/client/messages/delete-notification/${deleteId}`, {
         method: 'DELETE',
         credentials: 'include',
       });

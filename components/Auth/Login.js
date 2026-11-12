@@ -8,7 +8,6 @@ import { useAuth } from "@/components/context/AuthContext";
 export default function Login() {
   const router = useRouter();
   const { refetch } = useAuth();
-  const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -21,11 +20,11 @@ export default function Login() {
     handleLogin()
   }
 
-  const handleLogin = async ()=>{
+  const handleLogin = async () => {
     setError('')
     setSuccess('')
-    try{
-      const res = await fetch(`${API_ORIGIN}/client/auth/login`,{
+    try {
+      const res = await fetch(`/api/proxy/client/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,21 +35,16 @@ export default function Login() {
 
       const data = await res.json();
 
-      if(data.success){
+      if (data.success) {
         setSuccess(data.message || "Logged in successfully");
         setEmail("");
         setPassword("");
-        try {
-          await refetch();
-        } catch (e) {
-          console.error("refetch failed", e);
-        }
-        // full reload so AuthContext re-reads the cookie, then redirect
-        window.location.href = "/portal";
+        await refetch();
+        router.push("/portal");
       } else {
         setError(data.message || "Invalid credentials");
       }
-    } catch(err){
+    } catch(err) {
       setError("Something went wrong. Please try again.");
       console.error(err.message);
     }
