@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
   const refetch = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_ORIGIN}/client/auth/me`, {
+      const res = await fetch('/api/proxy/client/auth/me', {
         method: 'GET',
         credentials: 'include',
         headers: {
