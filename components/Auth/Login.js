@@ -8,7 +8,6 @@ import { useAuth } from "@/components/context/AuthContext";
 export default function Login() {
   const router = useRouter();
   const { refetch } = useAuth();
-  const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,7 +24,7 @@ export default function Login() {
     setError('')
     setSuccess('')
     try {
-      const res = await fetch(`${API_ORIGIN}/client/auth/login`, {
+      const res = await fetch(`/api/proxy/client/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

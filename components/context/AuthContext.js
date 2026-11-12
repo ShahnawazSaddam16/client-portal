@@ -27,7 +27,6 @@ async function parseJsonResponse(response) {
 }
 
 export function AuthProvider({ children }) {
-  const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -40,7 +39,7 @@ export function AuthProvider({ children }) {
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_ORIGIN}/client/auth/me`, {
+      const res = await fetch(`/api/proxy/client/auth/me`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -73,7 +72,7 @@ export function AuthProvider({ children }) {
     }
 
     try {
-      const res = await fetch(`${API_ORIGIN}/client/auth/logout`, {
+      const res = await fetch(`/api/proxy/client/auth/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {

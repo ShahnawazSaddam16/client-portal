@@ -10,7 +10,6 @@ import { useAuth } from '@/components/context/AuthContext'
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'] })
 
-const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN
 
 const links = [
   { href: '/portal', label: 'Dashboard', icon: LayoutDashboard },
@@ -39,7 +38,7 @@ export default function SideBar() {
 
     const loadCount = async () => {
       try {
-        const res = await fetch(`${API_ORIGIN}/client/messages/user-notification`, {
+        const res = await fetch(`/api/proxy/client/messages/user-notification`, {
           credentials: 'include',
           method: 'GET',
           signal: controller.signal,

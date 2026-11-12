@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/components/context/AuthContext';
 
-const API_ORIGIN = process.env.NEXT_PUBLIC_API_ORIGIN;
 
 function useCountUp(target, duration = 900) {
   const [value, setValue] = useState(0);
@@ -68,7 +67,7 @@ export default function Stats() {
         setLoading(true);
         setError('');
 
-        const res = await fetch(`${API_ORIGIN}/client/projects/user-project`, {
+        const res = await fetch(`/api/proxy/client/projects/user-project`, {
           credentials: 'include',
           method: "GET",
         });
