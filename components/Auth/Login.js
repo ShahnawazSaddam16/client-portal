@@ -39,9 +39,8 @@ export default function Login() {
         setSuccess(data.message || "Logged in successfully");
         setEmail("");
         setPassword("");
-        // Refetch to update AuthContext, then navigate
         await refetch();
-        router.replace("/portal");
+        router.push("/portal");
       } else {
         setError(data.message || "Invalid credentials");
       }
