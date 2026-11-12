@@ -10,7 +10,7 @@ export default function PortalLayout({ children }) {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    // Still waiting for the initial AuthContext fetch to settle
+    console.log(loading,user)
     if (loading) return;
 
     if (user) {
@@ -18,11 +18,6 @@ export default function PortalLayout({ children }) {
       setAuthChecked(true);
       return;
     }
-
-    // AuthContext loaded but user is null.
-    // This can happen due to a React 18 concurrent render race where
-    // Login.js's refetch() state update hasn't committed before navigation.
-    // Do one independent check before deciding to redirect.
     refetch().then((freshUser) => {
       if (freshUser) {
         setAuthChecked(true);

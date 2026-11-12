@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(request) {
+export function proxy(request) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('client_token');
 
@@ -27,3 +27,5 @@ export function middleware(request) {
 export const config = {
   matcher: ['/', '/portal/:path*'],
 };
+
+
