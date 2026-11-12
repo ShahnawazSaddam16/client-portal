@@ -27,7 +27,7 @@ export default function SideBar() {
   const [count, setCount] = useState(0)
   const pathname = usePathname()
   const router = useRouter()
-  const { user, setUser } = useAuth()
+  const { user, logout } = useAuth()
 
   const initial = user?.username?.charAt(0)?.toUpperCase() || 'U'
   const userId = user?._id || user?.id
@@ -63,25 +63,12 @@ export default function SideBar() {
     try {
       setLoggingOut(true)
       setLogoutError('')
-
-      const res = await fetch(`${API_ORIGIN}/client/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      })
-
-      const json = await res.json()
-
-      if (!res.ok || !json.success) {
-        throw new Error(json.message || 'Logout failed')
-      }
-
-      if (setUser) setUser(null)
+      await logout()
       setConfirmOpen(false)
       setOpen(false)
       router.push('/')
-      router.refresh()
     } catch (err) {
-      setLogoutError(err.message)
+      setLogoutError(err.message || 'Logout failed')
     } finally {
       setLoggingOut(false)
     }

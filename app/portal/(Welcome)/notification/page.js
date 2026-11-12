@@ -1,35 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/context/AuthContext";
 import SideBar from "@/components/app-shell/SideBar";
 import AllNotifications from "@/components/Portal/Welcome/Notification/AllNotifications";
 
-export default function PortalPage() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace("/");
-    }
-  }, [loading, user, router]);
-
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-700">
-        <div className="text-center">
-          <p className="text-lg font-medium">Checking your session...</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
+export default function NotificationPage() {
   return (
     <main className="flex min-h-screen bg-white">
       <SideBar />

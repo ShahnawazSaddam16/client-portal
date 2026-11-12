@@ -21,11 +21,11 @@ export default function Login() {
     handleLogin()
   }
 
-  const handleLogin = async ()=>{
+  const handleLogin = async () => {
     setError('')
     setSuccess('')
-    try{
-      const res = await fetch(`${API_ORIGIN}/client/auth/login`,{
+    try {
+      const res = await fetch(`${API_ORIGIN}/client/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -36,16 +36,17 @@ export default function Login() {
 
       const data = await res.json();
 
-      if(data.success){
+      if (data.success) {
         setSuccess(data.message || "Logged in successfully");
         setEmail("");
         setPassword("");
+        // Refetch to update AuthContext, then navigate
         await refetch();
-        router.push("/portal");
+        router.replace("/portal");
       } else {
         setError(data.message || "Invalid credentials");
       }
-    } catch(err){
+    } catch(err) {
       setError("Something went wrong. Please try again.");
       console.error(err.message);
     }
