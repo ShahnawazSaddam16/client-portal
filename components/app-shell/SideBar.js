@@ -38,7 +38,7 @@ export default function SideBar() {
 
     const loadCount = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/messages/user-notification`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/notifications/user-notification`, {
           credentials: 'include',
           method: 'GET',
           signal: controller.signal,
@@ -99,6 +99,12 @@ export default function SideBar() {
         className="md:hidden fixed top-4 left-4 z-40 p-2 rounded-lg bg-white shadow-md border border-gray-100 text-blue-600 active:scale-95 transition-transform"
       >
         <Menu size={22} />
+        {count > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-3 w-3">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-600 opacity-60" />
+            <span className="relative inline-flex h-3 w-3 rounded-full border-2 border-white bg-blue-600" />
+          </span>
+        )}
       </button>
 
       {open && (
