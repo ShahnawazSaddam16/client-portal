@@ -2,6 +2,8 @@
 'use client';
 
 import { User, Mail, Phone, Send, Code2 } from 'lucide-react';
+import { useState } from 'react';
+import ContactInput from './ContactInput';
 
 const DEVELOPER = {
   name: 'Shahnawaz Saddam Butt',
@@ -54,7 +56,10 @@ function InfoRow({ icon: Icon, label, value, href, delay }) {
 }
 
 export default function ContactContainer() {
+  const [open, setOpen] = useState("");
+
   return (
+    <>
     <div className="mt-8 flex w-full justify-center lg:justify-end">
       <style>{`
         @keyframes contactRise {
@@ -163,8 +168,8 @@ export default function ContactContainer() {
           />
         </div>
 
-        <a
-          href={`mailto:${DEVELOPER.email}?subject=${encodeURIComponent('Message for Shahnawaz Saddam Butt')}`}
+        <button
+        onClick={()=>{setOpen(true)}}
           className="contact-btn relative mt-5 flex w-full items-center justify-center gap-2 overflow-hidden rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-lg active:translate-y-0 active:scale-[0.98]"
         >
           <span className="contact-shine pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-white/25" />
@@ -175,9 +180,10 @@ export default function ContactContainer() {
             size={16}
             className="contact-send transition-transform duration-300"
           />
-        </a>
-
+        </button>
       </div>
     </div>
+    <ContactInput open={open} setOpen={setOpen}/>
+    </>
   );
 }
