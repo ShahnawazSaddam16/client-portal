@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
   const refetch = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/proxy/client/auth/me', {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/auth/me`, {
         method: 'GET',
         credentials: 'include',
         headers: {
@@ -61,7 +61,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(async () => {
     try {
-      const res = await fetch(`/api/proxy/client/auth/logout`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/auth/logout`, {
         method: 'POST',
         credentials: 'include',
         headers: {

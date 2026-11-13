@@ -1,7 +1,7 @@
 "use client";
 
 import SideBar from "@/components/app-shell/SideBar";
-import ProjectById from "@/components/Portal/Welcome/Projects/ProjectById";
+import ProjectById from "@/components/Portal/Projects/ProjectById";
 
 export default function ProjectIdPage() {
   return (

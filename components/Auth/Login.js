@@ -24,7 +24,7 @@ export default function Login() {
     setError('')
     setSuccess('')
     try {
-      const res = await fetch(`/api/proxy/client/auth/login`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -104,7 +104,7 @@ export default function AllNotifications() {
         setLoading(true);
         setError('');
 
-        const res = await fetch(`/api/proxy/client/messages/user-notification`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/notifications/user-notification`, {
           credentials: 'include',
           method: 'GET',
         });
@@ -146,7 +146,7 @@ export default function AllNotifications() {
       setDeleting(true);
       setDeleteError('');
 
-      const res = await fetch(`/api/proxy/client/messages/delete-notification/${deleteId}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/notifications/delete-notification/${deleteId}`, {
         method: 'DELETE',
         credentials: 'include',
       });

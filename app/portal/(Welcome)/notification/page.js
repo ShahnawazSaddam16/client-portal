@@ -1,7 +1,7 @@
 "use client";
 
 import SideBar from "@/components/app-shell/SideBar";
-import AllNotifications from "@/components/Portal/Welcome/Notification/AllNotifications";
+import AllNotifications from "@/components/Portal/Notification/AllNotifications";
 
 export default function NotificationPage() {
   return (

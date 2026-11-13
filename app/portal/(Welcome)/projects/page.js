@@ -1,7 +1,7 @@
 "use client";
 
 import SideBar from "@/components/app-shell/SideBar";
-import AllProjects from "@/components/Portal/Welcome/Projects/AllProjects";
+import AllProjects from "@/components/Portal/Projects/AllProjects";
 
 export default function ProjectsPage() {
   return (

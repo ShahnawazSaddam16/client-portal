@@ -321,7 +321,7 @@ export default function AllProjects() {
         setLoading(true);
         setError('');
 
-        const res = await fetch(`/api/proxy/client/projects/user-project`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/projects/user-project`, {
           credentials: 'include',
           method: 'GET',
           signal: controller.signal,
