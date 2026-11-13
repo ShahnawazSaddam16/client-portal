@@ -26,16 +26,16 @@ export default function Header() {
 
       <div className="flex gap-3">
 
-        <div
+        <button
+        onClick={()=>{setOpen(true)}}
           className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border cursor-pointer
       border-white/20 px-3 py-1.5 rounded-full hover:bg-white/20 transition duration-150"
         >
-          <button className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-900"
-          onClick={()=>{setOpen(true)}}>
+          <div className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-900">
             <User2 className="w-4 h-4 text-white" />
-          </button>
+          </div>
           <span className="font-medium text-sm text-white">Request a Quote</span>
-        </div>
+        </button>
 
         <div
           className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border cursor-pointer
