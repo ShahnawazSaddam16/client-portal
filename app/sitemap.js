@@ -12,7 +12,7 @@ export default function sitemap() {
   return routes.map((route) => ({
     url: `${siteUrl}${route}`,
     lastModified: new Date(),
-    changefreq: "weekly",
+    changeFrequency: "weekly",
     priority: route === "" ? 1 : 0.8,
   }));
 }
