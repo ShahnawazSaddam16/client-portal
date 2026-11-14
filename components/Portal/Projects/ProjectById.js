@@ -10,6 +10,7 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useAuth } from '@/components/context/AuthContext';
+import ContactInput from '../Welcome/ContactInput';
 
 
 const statusStyles = {
@@ -331,6 +332,70 @@ export default function ProjectById() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [viewerIndex, setViewerIndex] = useState(null);
+  const [answered, setAnswered] = useState(true);
+  const [thanks, setThanks] = useState(false);
+  const [voting, setVoting] = useState(false);
+  const [voteError, setVoteError] = useState('');
+  const [messageOpen, setMessageOpen] = useState(false);
+
+  const updateId = project
+    ? `${project._id}-${project.updatedAt || JSON.stringify([project.status, project.projectProgress])}`
+    : null;
+  const storageKey = updateId ? `update-answered-${updateId}` : null;
+
+  useEffect(() => {
+    if (!storageKey) return;
+    setThanks(false);
+    setVoteError('');
+    try {
+      setAnswered(localStorage.getItem(storageKey) === '1');
+    } catch {
+      setAnswered(true);
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!thanks) return;
+    const timer = setTimeout(() => setAnswered(true), 1800);
+    return () => clearTimeout(timer);
+  }, [thanks]);
+
+  const answer = async (approval) => {
+    if (!updateId) return;
+
+    try {
+      setVoting(true);
+      setVoteError('');
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/messages/update-approval`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approval, updateId }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Failed to save your answer');
+      }
+
+      try {
+        localStorage.setItem(storageKey, '1');
+      } catch {}
+
+      if (approval === 'liked') {
+        setThanks(true);
+      } else {
+        setAnswered(true);
+        setMessageOpen(true);
+      }
+    } catch (err) {
+      setVoteError(err.message);
+    } finally {
+      setVoting(false);
+    }
+  };
 
   useEffect(() => {
     if (!userId || !id) return;
@@ -432,6 +497,49 @@ export default function ProjectById() {
         <span aria-hidden="true">←</span>
         All Projects
       </Link>
+
+      {!answered && (
+        <div className="stats-rise mt-6 flex w-full flex-col gap-4 rounded-2xl bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          {thanks ? (
+            <div className="space-y-1">
+              <h2 className="text-base font-bold text-gray-950 sm:text-lg">
+                Thank <span className="text-blue-600">You</span>
+              </h2>
+              <p className="text-sm text-gray-500">Glad you like the update.</p>
+            </div>
+          ) : (
+            <>
+              <div className="space-y-1">
+                <h2 className="text-base font-bold text-gray-950 sm:text-lg">
+                  Do you like the <span className="text-blue-600">Update</span>?
+                </h2>
+                <p className="text-sm text-gray-500">
+                  {voteError || `Hi ${user?.username || 'there'}, let us know what you think.`}
+                </p>
+              </div>
+
+              <div className="flex shrink-0 gap-3">
+                <button
+                  type="button"
+                  onClick={() => answer('disliked')}
+                  disabled={voting}
+                  className="rounded-full border border-gray-100 bg-white px-5 py-2 text-sm font-medium text-gray-500 shadow-sm transition-all duration-300 hover:text-gray-950 hover:shadow-md disabled:opacity-60"
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  onClick={() => answer('liked')}
+                  disabled={voting}
+                  className="rounded-full bg-blue-600 px-5 py-2 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:bg-blue-700 hover:shadow-md disabled:opacity-70"
+                >
+                  Yes
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {loading && <Loader />}
 
@@ -570,6 +678,8 @@ export default function ProjectById() {
           onClose={() => setViewerIndex(null)}
         />
       )}
+
+      {messageOpen && <ContactInput open={messageOpen} setOpen={setMessageOpen} forceAnswered />}
     </section>
   );
 }

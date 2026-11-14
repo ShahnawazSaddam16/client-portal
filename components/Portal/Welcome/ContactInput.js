@@ -4,6 +4,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '@/components/context/AuthContext';
 
 const LIMIT = 1999;
+const UPDATE_ID = 'v1';
+const STORAGE_KEY = `update-answered-${UPDATE_ID}`;
 
 export default function ContactInput({ open, setOpen }) {
   const { user } = useAuth();
@@ -11,7 +13,17 @@ export default function ContactInput({ open, setOpen }) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+  const [liked, setLiked] = useState(false);
   const [closing, setClosing] = useState(false);
+  const [answered, setAnswered] = useState(true);
+
+  useEffect(() => {
+    try {
+      setAnswered(localStorage.getItem(STORAGE_KEY) === '1');
+    } catch {
+      setAnswered(true);
+    }
+  }, []);
 
   const close = useCallback(() => {
     if (sending) return;
@@ -22,6 +34,7 @@ export default function ContactInput({ open, setOpen }) {
       setMessage('');
       setError('');
       setSent(false);
+      setLiked(false);
     }, 220);
   }, [sending, setOpen]);
 
@@ -43,6 +56,41 @@ export default function ContactInput({ open, setOpen }) {
     const timer = setTimeout(close, 1800);
     return () => clearTimeout(timer);
   }, [sent, close]);
+
+  const answer = async (approval) => {
+    try {
+      setSending(true);
+      setError('');
+
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_ORIGIN}/client/messages/update-approval`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ approval, updateId: UPDATE_ID }),
+      });
+
+      const json = await res.json();
+
+      if (!res.ok || !json.success) {
+        throw new Error(json.message || 'Failed to save your answer');
+      }
+
+      try {
+        localStorage.setItem(STORAGE_KEY, '1');
+      } catch {}
+
+      setAnswered(true);
+
+      if (approval === 'liked') {
+        setLiked(true);
+        setSent(true);
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSending(false);
+    }
+  };
 
   const submit = async () => {
     const text = message.trim();
@@ -79,6 +127,20 @@ export default function ContactInput({ open, setOpen }) {
 
   return (
     <>
+      {!open && !answered && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-lg"
+        >
+          <span className="relative flex h-2.5 w-2.5">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+          </span>
+          New update
+        </button>
+      )}
+
       {open && (
         <section
           onClick={close}
@@ -148,10 +210,61 @@ export default function ContactInput({ open, setOpen }) {
                   </svg>
                 </div>
                 <h2 className="mt-5 text-xl font-extrabold text-gray-950">
-                  Message <span className="text-blue-600">Sent</span>
+                  {liked ? (
+                    <>
+                      Thank <span className="text-blue-600">You</span>
+                    </>
+                  ) : (
+                    <>
+                      Message <span className="text-blue-600">Sent</span>
+                    </>
+                  )}
                 </h2>
-                <p className="mt-1 text-gray-500 text-sm">We will get back to you soon.</p>
+                <p className="mt-1 text-gray-500 text-sm">
+                  {liked ? 'Glad you like the update.' : 'We will get back to you soon.'}
+                </p>
               </div>
+            ) : !answered ? (
+              <>
+                <div className="space-y-1 pr-8">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-gray-950">
+                    Do you like the <span className="text-blue-600">Update</span>?
+                  </h2>
+                  <p className="text-gray-500 text-sm">
+                    Hi {user?.username || 'there'}, let us know what you think of the latest update.
+                  </p>
+                </div>
+
+                <div className="mt-5 min-h-[1rem] text-xs">
+                  <span className={`text-blue-600 transition-all duration-300 ${error ? 'opacity-100' : 'opacity-0'}`}>
+                    {error || ' '}
+                  </span>
+                </div>
+
+                <div className="mt-3 flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => answer('disliked')}
+                    disabled={sending}
+                    className="rounded-xl border border-gray-100 bg-white px-5 py-2.5 text-sm font-medium text-gray-500 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:text-gray-950 hover:shadow-md disabled:opacity-60"
+                  >
+                    No
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => answer('liked')}
+                    disabled={sending}
+                    className="flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0"
+                  >
+                    {sending && (
+                      <svg className="msg-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round">
+                        <path d="M12 3a9 9 0 019 9" />
+                      </svg>
+                    )}
+                    Yes
+                  </button>
+                </div>
+              </>
             ) : (
               <>
                 <div className="space-y-1 pr-8">
