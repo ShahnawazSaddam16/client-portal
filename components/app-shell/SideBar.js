@@ -15,7 +15,7 @@ const links = [
   { href: '/portal', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/portal/projects', label: 'Projects', icon: FolderKanban },
   { href: '/portal/notification', label: 'Notifications', icon: MessageSquare },
-  { href: '/client/settings', label: 'Settings', icon: Settings },
+  { href: '/portal/settings', label: 'Settings', icon: Settings },
 ]
 
 export default function SideBar() {
