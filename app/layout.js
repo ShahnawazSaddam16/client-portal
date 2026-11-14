@@ -23,6 +23,8 @@ export const metadata = {
     "client portal",
     "project updates",
     "client dashboard",
+    "Client Portal By Butt Networks",
+    "Client Portal Butt Networks",
     "secure client access",
     "notifications",
   ],
