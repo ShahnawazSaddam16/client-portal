@@ -20,6 +20,23 @@ const statusStyles = {
   'Not Started': 'bg-gray-100 text-gray-600',
 };
 
+function formatDuration(value) {
+  if (!value) return value;
+  return String(value).replace(
+    /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z/g,
+    (iso) => {
+      const d = new Date(iso);
+      if (isNaN(d.getTime())) return iso;
+      return d.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'UTC',
+      });
+    }
+  );
+}
+
 function StatusBadge({ status }) {
   return (
     <span
@@ -245,7 +262,7 @@ function ProjectCard({ project, index }) {
 
         <div className="flex flex-wrap gap-y-3 rounded-lg bg-gray-50 px-4 py-3">
           <MetaItem label="Type" value={project.projectType} />
-          <MetaItem label="Duration" value={project.projectDuration} />
+          <MetaItem label="Duration" value={formatDuration(project.projectDuration)} />
         </div>
 
         <ProgressBlock progress={project.projectProgress} />
