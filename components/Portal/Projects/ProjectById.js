@@ -11,6 +11,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useAuth } from '@/components/context/AuthContext';
 import ContactInput from '../Welcome/ContactInput';
+import AiSuggestModal from './AiSuggestModal';
 
 
 const statusStyles = {
@@ -337,6 +338,7 @@ export default function ProjectById() {
   const [voting, setVoting] = useState(false);
   const [voteError, setVoteError] = useState('');
   const [messageOpen, setMessageOpen] = useState(false);
+  const [aiOpen, setAiOpen] = useState(false);
 
   const updateId = project
     ? `${project._id}-${project.updatedAt || JSON.stringify([project.status, project.projectProgress])}`
@@ -463,8 +465,15 @@ export default function ProjectById() {
         }
         .stats-rise { opacity: 0; animation: statsRise 0.6s ease-out forwards; }
 
+        @keyframes aiBlink {
+          0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.5); }
+          50% { opacity: 0.55; box-shadow: 0 0 0 8px rgba(37, 99, 235, 0); }
+        }
+        .ai-blink { animation: aiBlink 1.4s ease-in-out infinite; }
+
         @media (prefers-reduced-motion: reduce) {
           .stats-rise { opacity: 1; animation: none; }
+          .ai-blink { animation: none; }
         }
 
         .project-swiper {
@@ -566,7 +575,16 @@ export default function ProjectById() {
                 {project.projectName || 'Untitled project'}
               </h1>
             </div>
-            <StatusBadge status={project.status} />
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setAiOpen(true)}
+                className="ai-blink rounded-full bg-blue-600 px-5 py-1.5 text-xs font-medium whitespace-nowrap text-white shadow-sm transition-colors duration-300 hover:bg-blue-700"
+              >
+                AI Suggest ✦
+              </button>
+              <StatusBadge status={project.status} />
+            </div>
           </div>
 
           <div
@@ -680,6 +698,8 @@ export default function ProjectById() {
       )}
 
       {messageOpen && <ContactInput open={messageOpen} setOpen={setMessageOpen} forceAnswered />}
+
+      <AiSuggestModal open={aiOpen} onClose={() => setAiOpen(false)} projectId={id} />
     </section>
   );
 }
